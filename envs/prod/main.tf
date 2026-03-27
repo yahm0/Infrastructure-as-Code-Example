@@ -34,13 +34,13 @@ locals {
 module "vpc" {
   source = "../../modules/vpc"
 
-  vpc_name           = "${var.environment}-vpc"
-  vpc_cidr           = var.vpc_cidr
-  public_subnets     = var.public_subnets
-  private_subnets    = var.private_subnets
-  azs                = var.azs
-  enable_nat_gateway = var.enable_nat_gateway
-  enable_flow_logs   = true
+  vpc_name                 = "${var.environment}-vpc"
+  vpc_cidr                 = var.vpc_cidr
+  public_subnets           = var.public_subnets
+  private_subnets          = var.private_subnets
+  azs                      = var.azs
+  enable_nat_gateway       = var.enable_nat_gateway
+  enable_flow_logs         = true
   flow_logs_retention_days = 90
 }
 
@@ -137,9 +137,9 @@ module "rds" {
   skip_final_snapshot     = false # NEVER skip in production
   publicly_accessible     = false
   storage_encrypted       = true
-  multi_az                = true  # High availability for production
-  backup_retention_period = 35    # Maximum retention
-  deletion_protection     = true  # Prevent accidental deletion
+  multi_az                = true # High availability for production
+  backup_retention_period = 35   # Maximum retention
+  deletion_protection     = true # Prevent accidental deletion
   vpc_security_group_ids  = [module.db_sg.security_group_id]
   db_subnet_group_name    = aws_db_subnet_group.this.name
 
@@ -185,10 +185,10 @@ module "cloudwatch" {
   log_group_name    = "/${var.environment}/${var.project_name}"
   retention_in_days = 90
 
-  enable_alarms    = true
-  alarm_prefix     = var.environment
-  alarm_email      = var.alarm_email
-  alb_arn_suffix   = replace(module.alb.alb_arn, "/.*:loadbalancer\\//", "")
+  enable_alarms  = true
+  alarm_prefix   = var.environment
+  alarm_email    = var.alarm_email
+  alb_arn_suffix = replace(module.alb.alb_arn, "/.*:loadbalancer\\//", "")
 
   tags = local.common_tags
 }

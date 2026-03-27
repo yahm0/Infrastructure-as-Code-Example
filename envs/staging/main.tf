@@ -34,13 +34,13 @@ locals {
 module "vpc" {
   source = "../../modules/vpc"
 
-  vpc_name           = "${var.environment}-vpc"
-  vpc_cidr           = var.vpc_cidr
-  public_subnets     = var.public_subnets
-  private_subnets    = var.private_subnets
-  azs                = var.azs
-  enable_nat_gateway = var.enable_nat_gateway
-  enable_flow_logs   = true
+  vpc_name                 = "${var.environment}-vpc"
+  vpc_cidr                 = var.vpc_cidr
+  public_subnets           = var.public_subnets
+  private_subnets          = var.private_subnets
+  azs                      = var.azs
+  enable_nat_gateway       = var.enable_nat_gateway
+  enable_flow_logs         = true
   flow_logs_retention_days = 30
 }
 
@@ -181,12 +181,12 @@ module "cloudwatch" {
   log_group_name    = "/${var.environment}/${var.project_name}"
   retention_in_days = 30
 
-  enable_alarms    = true
-  alarm_prefix     = var.environment
-  alarm_email      = var.alarm_email
-  ec2_instance_id  = module.ec2.instance_id
-  rds_instance_id  = module.rds.rds_instance_id
-  alb_arn_suffix   = replace(module.alb.alb_arn, "/.*:loadbalancer\\//", "")
+  enable_alarms   = true
+  alarm_prefix    = var.environment
+  alarm_email     = var.alarm_email
+  ec2_instance_id = module.ec2.instance_id
+  rds_instance_id = module.rds.rds_instance_id
+  alb_arn_suffix  = replace(module.alb.alb_arn, "/.*:loadbalancer\\//", "")
 
   tags = local.common_tags
 }
@@ -241,8 +241,8 @@ module "ec2_role" {
 module "cloudtrail" {
   source = "../../modules/cloudtrail"
 
-  trail_name     = "${var.environment}-${var.project_name}-trail"
-  s3_bucket_name = "${var.environment}-${var.project_name}-cloudtrail-logs"
+  trail_name      = "${var.environment}-${var.project_name}-trail"
+  s3_bucket_name  = "${var.environment}-${var.project_name}-cloudtrail-logs"
   is_multi_region = false
   force_destroy   = true # OK for staging — data can be regenerated
 

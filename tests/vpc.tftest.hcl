@@ -6,11 +6,11 @@ run "creates_vpc_with_correct_cidr" {
   }
 
   variables {
-    vpc_name       = "test-vpc"
-    vpc_cidr       = "10.99.0.0/16"
-    public_subnets = ["10.99.1.0/24"]
+    vpc_name        = "test-vpc"
+    vpc_cidr        = "10.99.0.0/16"
+    public_subnets  = ["10.99.1.0/24"]
     private_subnets = ["10.99.101.0/24"]
-    azs            = ["us-east-1a"]
+    azs             = ["us-east-1a"]
   }
 
   assert {
@@ -37,11 +37,11 @@ run "creates_correct_number_of_subnets" {
   }
 
   variables {
-    vpc_name       = "test-vpc"
-    vpc_cidr       = "10.99.0.0/16"
-    public_subnets = ["10.99.1.0/24", "10.99.2.0/24"]
+    vpc_name        = "test-vpc"
+    vpc_cidr        = "10.99.0.0/16"
+    public_subnets  = ["10.99.1.0/24", "10.99.2.0/24"]
     private_subnets = ["10.99.101.0/24", "10.99.102.0/24"]
-    azs            = ["us-east-1a", "us-east-1b"]
+    azs             = ["us-east-1a", "us-east-1b"]
   }
 
   assert {
