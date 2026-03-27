@@ -1,4 +1,3 @@
-
 variable "vpc_cidr" {
   description = "CIDR block for the VPC"
   type        = string
@@ -30,4 +29,16 @@ variable "enable_nat_gateway" {
   description = "Whether to create a NAT Gateway for private subnet egress"
   type        = bool
   default     = false
+}
+
+variable "enable_flow_logs" {
+  description = "Whether to enable VPC Flow Logs"
+  type        = bool
+  default     = false
+}
+
+variable "flow_logs_retention_days" {
+  description = "Number of days to retain VPC flow log events"
+  type        = number
+  default     = 30
 }

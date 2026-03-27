@@ -2,10 +2,12 @@ graph TB
     subgraph AWS["AWS Cloud"]
         subgraph VPC["VPC (10.x.0.0/16)"]
             IGW[Internet Gateway]
+            FL[VPC Flow Logs]
 
             subgraph Public["Public Subnets"]
                 ALB[Application Load Balancer]
-                EC2[EC2 Instance]
+                WAF[WAF Web ACL] --> ALB
+                ASG[Auto Scaling Group / EC2]
                 NAT[NAT Gateway]
             end
 
@@ -15,25 +17,31 @@ graph TB
         end
 
         S3[(S3 Bucket<br/>Encrypted + Versioned)]
-        CW[CloudWatch Logs]
+        CW[CloudWatch Logs + Alarms]
+        CT[CloudTrail]
         IAM[IAM Roles & Policies]
+        SNS[SNS Notifications]
     end
 
     Users((Users)) --> IGW
     IGW --> ALB
-    ALB --> EC2
-    EC2 --> NAT
+    ALB --> ASG
+    ASG --> NAT
     NAT --> RDS
-    EC2 -.-> S3
-    EC2 -.-> CW
-    IAM -.-> EC2
+    ASG -.-> S3
+    ASG -.-> CW
+    CW -.-> SNS
+    IAM -.-> ASG
+    CT -.-> S3
 
     classDef subnet fill:#e1f5fe,stroke:#01579b
     classDef service fill:#fff3e0,stroke:#e65100
     classDef storage fill:#e8f5e9,stroke:#1b5e20
     classDef external fill:#f3e5f5,stroke:#4a148c
+    classDef security fill:#fce4ec,stroke:#b71c1c
 
     class Public,Private subnet
-    class ALB,EC2,NAT,IGW,RDS service
-    class S3,CW storage
+    class ALB,ASG,NAT,IGW,RDS service
+    class S3,CW,CT storage
     class Users external
+    class WAF,FL,IAM security

@@ -39,6 +39,11 @@ variable "vpc_cidr" {
   description = "CIDR block for the VPC"
   type        = string
   default     = "10.2.0.0/16"
+
+  validation {
+    condition     = can(cidrhost(var.vpc_cidr, 0))
+    error_message = "Must be a valid CIDR block."
+  }
 }
 
 variable "public_subnets" {
@@ -100,6 +105,11 @@ variable "db_engine" {
   description = "Database engine (e.g. mysql, postgres)"
   type        = string
   default     = "mysql"
+
+  validation {
+    condition     = contains(["mysql", "postgres"], var.db_engine)
+    error_message = "Database engine must be mysql or postgres."
+  }
 }
 
 variable "db_engine_version" {
@@ -126,4 +136,56 @@ variable "ec2_instance_type" {
   description = "EC2 instance type"
   type        = string
   default     = "t3.medium"
+
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9]*\\.[a-z0-9]+$", var.ec2_instance_type))
+    error_message = "Must be a valid EC2 instance type (e.g. t3.medium)."
+  }
+}
+
+# --- Auto Scaling ---
+
+variable "asg_desired_capacity" {
+  description = "Desired number of instances in ASG"
+  type        = number
+  default     = 2
+
+  validation {
+    condition     = var.asg_desired_capacity >= 1
+    error_message = "Desired capacity must be at least 1."
+  }
+}
+
+variable "asg_min_size" {
+  description = "Minimum number of instances in ASG"
+  type        = number
+  default     = 2
+}
+
+variable "asg_max_size" {
+  description = "Maximum number of instances in ASG"
+  type        = number
+  default     = 6
+}
+
+# --- Load Balancer ---
+
+variable "certificate_arn" {
+  description = "ACM certificate ARN for HTTPS (leave empty for HTTP only)"
+  type        = string
+  default     = ""
+}
+
+variable "health_check_path" {
+  description = "Health check path for ALB target group"
+  type        = string
+  default     = "/"
+}
+
+# --- Monitoring ---
+
+variable "alarm_email" {
+  description = "Email address for CloudWatch alarm notifications"
+  type        = string
+  default     = ""
 }

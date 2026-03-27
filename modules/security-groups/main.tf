@@ -1,4 +1,3 @@
-
 resource "aws_security_group" "this" {
   name        = var.name
   description = var.description

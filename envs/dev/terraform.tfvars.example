@@ -24,3 +24,10 @@ db_parameter_group_name = "default.mysql8.0"
 # Compute (REQUIRED: replace AMI with your region's AMI)
 ec2_ami           = "ami-0c02fb55956c7d316"
 ec2_instance_type = "t3.micro"
+
+# Load Balancer
+certificate_arn   = ""   # ACM certificate ARN for HTTPS
+health_check_path = "/"
+
+# Monitoring
+alarm_email = "" # email for CloudWatch alarm notifications

@@ -1,4 +1,3 @@
-
 output "vpc_id" {
   description = "The ID of the VPC"
   value       = aws_vpc.main.id
@@ -22,4 +21,9 @@ output "internet_gateway_id" {
 output "nat_gateway_id" {
   description = "The ID of the NAT Gateway (if enabled)"
   value       = var.enable_nat_gateway ? aws_nat_gateway.this[0].id : null
+}
+
+output "flow_log_id" {
+  description = "The ID of the VPC Flow Log (if enabled)"
+  value       = var.enable_flow_logs ? aws_flow_log.this[0].id : null
 }
