@@ -24,14 +24,9 @@ output "rds_endpoint" {
 
 # --- Compute ---
 
-output "ec2_instance_id" {
-  description = "EC2 instance ID"
-  value       = module.ec2.instance_id
-}
-
-output "ec2_public_ip" {
-  description = "EC2 instance public IP"
-  value       = module.ec2.public_ip
+output "asg_name" {
+  description = "Auto Scaling Group name"
+  value       = module.asg.asg_name
 }
 
 # --- Load Balancer ---
@@ -41,9 +36,26 @@ output "alb_dns_name" {
   value       = module.alb.alb_dns_name
 }
 
+output "alb_target_group_arn" {
+  description = "ALB target group ARN"
+  value       = module.alb.target_group_arn
+}
+
 # --- Storage ---
 
 output "s3_bucket_name" {
   description = "S3 bucket name"
   value       = module.s3.bucket_name
+}
+
+# --- Security ---
+
+output "waf_web_acl_arn" {
+  description = "WAF Web ACL ARN"
+  value       = module.waf.web_acl_arn
+}
+
+output "cloudtrail_arn" {
+  description = "CloudTrail trail ARN"
+  value       = module.cloudtrail.trail_arn
 }

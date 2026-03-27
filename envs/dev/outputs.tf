@@ -41,6 +41,11 @@ output "alb_dns_name" {
   value       = module.alb.alb_dns_name
 }
 
+output "alb_target_group_arn" {
+  description = "ALB target group ARN"
+  value       = module.alb.target_group_arn
+}
+
 # --- Storage ---
 
 output "s3_bucket_name" {

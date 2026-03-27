@@ -1,4 +1,3 @@
-
 variable "allocated_storage" {
   description = "The amount of allocated storage in gigabytes"
   type        = number
@@ -65,6 +64,12 @@ variable "storage_encrypted" {
 
 variable "multi_az" {
   description = "Whether to deploy the RDS instance across multiple availability zones"
+  type        = bool
+  default     = false
+}
+
+variable "deletion_protection" {
+  description = "Whether to enable deletion protection on the RDS instance"
   type        = bool
   default     = false
 }

@@ -1,4 +1,3 @@
-
 resource "aws_db_instance" "this" {
   allocated_storage    = var.allocated_storage
   engine               = var.engine
@@ -23,6 +22,9 @@ resource "aws_db_instance" "this" {
 
   # Maintenance
   maintenance_window = var.maintenance_window
+
+  # Protection
+  deletion_protection = var.deletion_protection
 
   # Networking
   vpc_security_group_ids = var.vpc_security_group_ids

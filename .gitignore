@@ -141,6 +141,8 @@ dist
 # .tfstate files
 *.tfstate
 *.tfstate.*
+# Include lock files for reproducible builds
+!.terraform.lock.hcl
 # Crash log files
 crash.log
 crash.*.log

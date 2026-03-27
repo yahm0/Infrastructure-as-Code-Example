@@ -11,6 +11,22 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
+
+  default_tags {
+    tags = {
+      Environment = var.environment
+      Project     = var.project_name
+      ManagedBy   = "terraform"
+    }
+  }
+}
+
+locals {
+  common_tags = {
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "terraform"
+  }
 }
 
 # --- Networking ---
@@ -18,12 +34,14 @@ provider "aws" {
 module "vpc" {
   source = "../../modules/vpc"
 
-  vpc_name           = "${var.environment}-vpc"
-  vpc_cidr           = var.vpc_cidr
-  public_subnets     = var.public_subnets
-  private_subnets    = var.private_subnets
-  azs                = var.azs
-  enable_nat_gateway = var.enable_nat_gateway
+  vpc_name                 = "${var.environment}-vpc"
+  vpc_cidr                 = var.vpc_cidr
+  public_subnets           = var.public_subnets
+  private_subnets          = var.private_subnets
+  azs                      = var.azs
+  enable_nat_gateway       = var.enable_nat_gateway
+  enable_flow_logs         = true
+  flow_logs_retention_days = 14
 }
 
 # --- Security Groups ---
@@ -59,10 +77,9 @@ module "web_sg" {
     }
   ]
 
-  tags = {
-    Name        = "${var.environment}-web-sg"
-    Environment = var.environment
-  }
+  tags = merge(local.common_tags, {
+    Name = "${var.environment}-web-sg"
+  })
 }
 
 module "db_sg" {
@@ -90,10 +107,9 @@ module "db_sg" {
     }
   ]
 
-  tags = {
-    Name        = "${var.environment}-db-sg"
-    Environment = var.environment
-  }
+  tags = merge(local.common_tags, {
+    Name = "${var.environment}-db-sg"
+  })
 }
 
 # --- Database ---
@@ -102,35 +118,34 @@ resource "aws_db_subnet_group" "this" {
   name       = "${var.environment}-db-subnet-group"
   subnet_ids = module.vpc.private_subnet_ids
 
-  tags = {
-    Name        = "${var.environment}-db-subnet-group"
-    Environment = var.environment
-  }
+  tags = merge(local.common_tags, {
+    Name = "${var.environment}-db-subnet-group"
+  })
 }
 
 module "rds" {
   source = "../../modules/rds"
 
-  db_name                = "${var.environment}db"
-  username               = var.db_username
-  password               = var.db_password
-  instance_class         = var.db_instance_class
-  allocated_storage      = var.db_allocated_storage
-  engine                 = var.db_engine
-  engine_version         = var.db_engine_version
-  parameter_group_name   = var.db_parameter_group_name
-  skip_final_snapshot    = true # OK for dev — override in prod
-  publicly_accessible    = false
-  storage_encrypted      = true
-  multi_az               = false
+  db_name                 = "${var.environment}db"
+  username                = var.db_username
+  password                = var.db_password
+  instance_class          = var.db_instance_class
+  allocated_storage       = var.db_allocated_storage
+  engine                  = var.db_engine
+  engine_version          = var.db_engine_version
+  parameter_group_name    = var.db_parameter_group_name
+  skip_final_snapshot     = true # OK for dev — override in prod
+  publicly_accessible     = false
+  storage_encrypted       = true
+  multi_az                = false
   backup_retention_period = 1
-  vpc_security_group_ids = [module.db_sg.security_group_id]
-  db_subnet_group_name   = aws_db_subnet_group.this.name
+  deletion_protection     = false
+  vpc_security_group_ids  = [module.db_sg.security_group_id]
+  db_subnet_group_name    = aws_db_subnet_group.this.name
 
-  tags = {
-    Name        = "${var.environment}-rds"
-    Environment = var.environment
-  }
+  tags = merge(local.common_tags, {
+    Name = "${var.environment}-rds"
+  })
 }
 
 # --- Compute ---
@@ -144,10 +159,9 @@ module "ec2" {
   security_group_ids          = [module.web_sg.security_group_id]
   associate_public_ip_address = true
 
-  tags = {
-    Name        = "${var.environment}-web-server"
-    Environment = var.environment
-  }
+  tags = merge(local.common_tags, {
+    Name = "${var.environment}-web-server"
+  })
 }
 
 # --- Storage ---
@@ -159,7 +173,7 @@ module "s3" {
   enable_versioning = true
 }
 
-# --- Logging ---
+# --- Logging & Monitoring ---
 
 module "cloudwatch" {
   source = "../../modules/cloudwatch"
@@ -167,9 +181,14 @@ module "cloudwatch" {
   log_group_name    = "/${var.environment}/${var.project_name}"
   retention_in_days = 14
 
-  tags = {
-    Environment = var.environment
-  }
+  enable_alarms   = true
+  alarm_prefix    = var.environment
+  alarm_email     = var.alarm_email
+  ec2_instance_id = module.ec2.instance_id
+  rds_instance_id = module.rds.rds_instance_id
+  alb_arn_suffix  = replace(module.alb.alb_arn, "/.*:loadbalancer\\//", "")
+
+  tags = local.common_tags
 }
 
 # --- Load Balancer ---
@@ -177,15 +196,17 @@ module "cloudwatch" {
 module "alb" {
   source = "../../modules/alb"
 
-  name            = "${var.environment}-alb"
-  internal        = false
-  security_groups = [module.web_sg.security_group_id]
-  subnets         = module.vpc.public_subnet_ids
+  name              = "${var.environment}-alb"
+  internal          = false
+  security_groups   = [module.web_sg.security_group_id]
+  subnets           = module.vpc.public_subnet_ids
+  vpc_id            = module.vpc.vpc_id
+  health_check_path = var.health_check_path
+  certificate_arn   = var.certificate_arn
 
-  tags = {
-    Name        = "${var.environment}-alb"
-    Environment = var.environment
-  }
+  tags = merge(local.common_tags, {
+    Name = "${var.environment}-alb"
+  })
 }
 
 # --- IAM ---

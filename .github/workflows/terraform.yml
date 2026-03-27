@@ -2,21 +2,53 @@ name: Terraform
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
     branches: [main]
 
 env:
   TF_VERSION: "1.5.0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 permissions:
   contents: read
   pull-requests: write
 
 jobs:
+  format:
+    name: "Format Check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+  checkov:
+    name: "Security Scan"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: terraform
+          quiet: true
+          soft_fail: true
+
   terraform:
     name: "Terraform ${{ matrix.environment }}"
     runs-on: ubuntu-latest
+    needs: [format, checkov]
     strategy:
       matrix:
         environment: [dev, staging, prod]
@@ -32,17 +64,9 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TF_VERSION }}
-          # Uncomment if using Terraform Cloud:
-          # cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-      - name: Terraform Format Check
-        run: terraform fmt -check -recursive
 
       - name: Terraform Init
-        run: terraform init
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform init -backend=false
 
       - name: Terraform Validate
         run: terraform validate
@@ -62,3 +86,33 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+
+  infracost:
+    name: "Cost Estimate"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && vars.INFRACOST_ENABLED == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v3
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+      - name: Generate Infracost diff
+        run: |
+          infracost breakdown --path envs/dev --format json --out-file /tmp/infracost-dev.json
+          infracost breakdown --path envs/staging --format json --out-file /tmp/infracost-staging.json
+          infracost breakdown --path envs/prod --format json --out-file /tmp/infracost-prod.json
+          infracost output --path "/tmp/infracost-*.json" --format github-comment --out-file /tmp/infracost-comment.md
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+
+      - name: Post Infracost comment
+        uses: infracost/actions/comment@v1
+        with:
+          path: /tmp/infracost-comment.md
+          behavior: update
