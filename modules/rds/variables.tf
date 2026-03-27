@@ -6,7 +6,7 @@ variable "allocated_storage" {
 }
 
 variable "engine" {
-  description = "The database engine to use"
+  description = "The database engine to use (e.g. mysql, postgres)"
   type        = string
   default     = "mysql"
 }
@@ -52,17 +52,53 @@ variable "skip_final_snapshot" {
 }
 
 variable "publicly_accessible" {
-  description = "Bool to control if instance is publicly accessible"
+  description = "Whether the instance is publicly accessible"
   type        = bool
   default     = false
 }
 
+variable "storage_encrypted" {
+  description = "Whether to encrypt the DB storage at rest"
+  type        = bool
+  default     = true
+}
+
+variable "multi_az" {
+  description = "Whether to deploy the RDS instance across multiple availability zones"
+  type        = bool
+  default     = false
+}
+
+variable "backup_retention_period" {
+  description = "Number of days to retain automated backups (0 to disable, max 35)"
+  type        = number
+  default     = 7
+}
+
+variable "backup_window" {
+  description = "Preferred backup window (UTC) e.g. 03:00-04:00"
+  type        = string
+  default     = "03:00-04:00"
+}
+
+variable "maintenance_window" {
+  description = "Preferred maintenance window (UTC) e.g. sun:05:00-sun:06:00"
+  type        = string
+  default     = "sun:05:00-sun:06:00"
+}
+
 variable "vpc_security_group_ids" {
-  description = "List of VPC security groups to associate"
+  description = "List of VPC security group IDs to associate"
   type        = list(string)
 }
 
 variable "db_subnet_group_name" {
-  description = "The DB subnet group to associate with"
+  description = "Name of the DB subnet group to associate with"
   type        = string
+}
+
+variable "tags" {
+  description = "Tags to apply to the RDS instance"
+  type        = map(string)
+  default     = {}
 }

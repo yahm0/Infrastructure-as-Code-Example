@@ -5,7 +5,13 @@ variable "log_group_name" {
 }
 
 variable "retention_in_days" {
-  description = "Retention period for logs in days"
+  description = "Number of days to retain log events (0 = never expire)"
   type        = number
   default     = 30
+}
+
+variable "tags" {
+  description = "Tags to apply to the log group"
+  type        = map(string)
+  default     = {}
 }

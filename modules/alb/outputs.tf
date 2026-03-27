@@ -1,8 +1,10 @@
 
 output "alb_arn" {
-  value = aws_lb.this.arn
+  description = "The ARN of the Application Load Balancer"
+  value       = aws_lb.this.arn
 }
 
 output "alb_dns_name" {
-  value = aws_lb.this.dns_name
+  description = "The DNS name of the Application Load Balancer"
+  value       = aws_lb.this.dns_name
 }

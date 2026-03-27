@@ -1,0 +1,39 @@
+graph TB
+    subgraph AWS["AWS Cloud"]
+        subgraph VPC["VPC (10.x.0.0/16)"]
+            IGW[Internet Gateway]
+
+            subgraph Public["Public Subnets"]
+                ALB[Application Load Balancer]
+                EC2[EC2 Instance]
+                NAT[NAT Gateway]
+            end
+
+            subgraph Private["Private Subnets"]
+                RDS[(RDS Database)]
+            end
+        end
+
+        S3[(S3 Bucket<br/>Encrypted + Versioned)]
+        CW[CloudWatch Logs]
+        IAM[IAM Roles & Policies]
+    end
+
+    Users((Users)) --> IGW
+    IGW --> ALB
+    ALB --> EC2
+    EC2 --> NAT
+    NAT --> RDS
+    EC2 -.-> S3
+    EC2 -.-> CW
+    IAM -.-> EC2
+
+    classDef subnet fill:#e1f5fe,stroke:#01579b
+    classDef service fill:#fff3e0,stroke:#e65100
+    classDef storage fill:#e8f5e9,stroke:#1b5e20
+    classDef external fill:#f3e5f5,stroke:#4a148c
+
+    class Public,Private subnet
+    class ALB,EC2,NAT,IGW,RDS service
+    class S3,CW storage
+    class Users external

@@ -1,0 +1,26 @@
+# Copy this file to terraform.tfvars and fill in your values.
+# Required values have no default and MUST be set.
+
+aws_region   = "us-east-1"
+environment  = "prod"
+project_name = "myproject"
+
+# Networking
+vpc_cidr           = "10.2.0.0/16"
+public_subnets     = ["10.2.1.0/24", "10.2.2.0/24", "10.2.3.0/24"]
+private_subnets    = ["10.2.101.0/24", "10.2.102.0/24", "10.2.103.0/24"]
+azs                = ["us-east-1a", "us-east-1b", "us-east-1c"]
+enable_nat_gateway = true
+
+# Database (REQUIRED: db_password has no default)
+db_username             = "admin"
+db_password             = "CHANGE_ME" # use TF_VAR_db_password env var instead
+db_instance_class       = "db.t3.medium"
+db_allocated_storage    = 100
+db_engine               = "mysql"
+db_engine_version       = "8.0"
+db_parameter_group_name = "default.mysql8.0"
+
+# Compute (REQUIRED: replace AMI with your region's AMI)
+ec2_ami           = "ami-0c02fb55956c7d316"
+ec2_instance_type = "t3.medium"

@@ -5,8 +5,8 @@ variable "role_name" {
 }
 
 variable "assume_role_services" {
-  description = "Service or services that can assume the role"
-  type        = any
+  description = "Service(s) that can assume the role (e.g. \"ec2.amazonaws.com\" or [\"ec2.amazonaws.com\", \"lambda.amazonaws.com\"])"
+  type        = list(string)
 }
 
 variable "policy_name" {
